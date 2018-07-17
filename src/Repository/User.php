@@ -8,7 +8,7 @@
 
 namespace App\Repository;
 
-use App\Util\Schedule;
+use App\DependencyInjection\Schedule;
 
 abstract class User implements IUser
 {

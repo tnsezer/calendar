@@ -10,9 +10,11 @@ namespace App\Util;
 
 use App\Repository\Candidate;
 use App\Repository\Interviewer;
+use App\Exception\ErrorHandler;
 
 class Appointment
 {
+    use ErrorHandler;
 
     public $candidate = null;
     public $interviewers = [];
@@ -34,49 +36,55 @@ class Appointment
     }
 
     /**
-     * @return array
-     * @throws \Exception
+     * @return array|\Symfony\Component\HttpFoundation\JsonResponse
      */
-    public function query(): array
+    public function query()
     {
         if(! $this->candidate instanceof Candidate){
-            throw new \Exception('candidate has to be instanceof Candidate Class', 1001);
+            return $this->validationError(['code' => 1001, 'message' => 'candidate has to be instanceof Candidate Class']);
         }
         if(empty($this->interviewers)){
-            throw new \Exception('Must set minimum one interviewer', 1002);
+            return $this->validationError(['code' => 1002, 'message' => 'Must set minimum one interviewer']);
         }
 
-        $firstInterviewerDate = $this->interviewers[0]->getSchedule();
-        unset($this->interviewers[0]);
+        $firstInterviewerDate = current($this->interviewers)->getSchedule();
+        next($this->interviewers);
 
         foreach ($this->interviewers as $interviewer){
             $interviewerAvailable = $interviewer->getSchedule();
 
-            foreach ($firstInterviewerDate as $day => $hours1){
-                if(isset($interviewerAvailable[$day])) {
-                    foreach ($interviewerAvailable[$day] as $hour2) {
-                        foreach ($hours1 as $key => $hour1) {
-                            $matched = true;
-                            if ($hour2[0] <= $hour1[0] && $hour1[0] < $hour2[1]) {
-                                $matched = false;
-                            }
-                            if($matched){
-                                unset($firstInterviewerDate[$day][$key]);
-                            }
-                        }
+            foreach ($firstInterviewerDate as $key => $firstDate){
+                $matched = false;
+                foreach ($interviewerAvailable as $date){
+                    if($firstDate[0] >= $date[0] && $firstDate[0] <= $date[1]){
+                        $matched = true;
+                        break;
                     }
-                    if(empty($firstInterviewerDate[$day])){
-                        unset($firstInterviewerDate[$day]);
-                    }
-                }else{
-                    unset($firstInterviewerDate[$day]);
+                }
+
+                if(! $matched){
+                    unset($firstInterviewerDate[$key]);
                 }
             }
         }
 
         $availableCandidate = $this->candidate->getSchedule();
-        $linearTime = array_intersect_key($availableCandidate, $firstInterviewerDate);
+        foreach ($availableCandidate as $key => $firstDate){
+            $matched = false;
+            foreach ($firstInterviewerDate as $date){
+                if($firstDate[0] >= $date[0] && $firstDate[0] <= $date[1]){
+                    $matched = true;
+                    $firstDate[1] = clone $firstDate[0];
+                    $firstDate[1]->modify("+1 hour");
+                    break;
+                }
+            }
 
-        return $linearTime;
+            if(! $matched){
+                unset($availableCandidate[$key]);
+            }
+        }
+
+        return $availableCandidate;
     }
 }

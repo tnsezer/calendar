@@ -7,7 +7,7 @@
  */
 namespace App\Controller;
 
-use App\Util\Schedule;
+use App\DependencyInjection\Schedule;
 use App\Util\Appointment;
 use App\Repository\Candidate;
 use App\Repository\Interviewer;
@@ -24,38 +24,60 @@ class interviewController extends AbstractController
      * @Route("/interview", name="interview")
      */
     public function index(){
-        try {
             $candidate = new Candidate("Carl");
             $candidate->setSchedule(new Schedule());
-            $candidate->schedule
-                ->setSlot([Schedule::MONDAY, Schedule::TUESDAY, Schedule::WEDNESDAY, Schedule::THURSDAY, Schedule::FRIDAY], [9, 10])
-                ->setSlot(Schedule::WEDNESDAY, [10, 12]);
 
             $interviewer1 = new Interviewer("Philipp");
             $interviewer1->setSchedule(new Schedule());
-            $interviewer1->schedule
-                ->setSlot([Schedule::MONDAY, Schedule::TUESDAY, Schedule::WEDNESDAY, Schedule::THURSDAY, Schedule::FRIDAY], [9, 16]);
 
             $interviewer2 = new Interviewer("Sarah");
             $interviewer2->setSchedule(new Schedule());
+
+
+        try {
+            $candidate->schedule
+                ->setSlot(new \DateTime("2018-07-16 09:00"), new \DateTime("2018-07-16 10:00"))
+                ->setSlot(new \DateTime("2018-07-17 09:00"), new \DateTime("2018-07-17 10:00"))
+                ->setSlot(new \DateTime("2018-07-18 09:00"), new \DateTime("2018-07-18 10:00"))
+                ->setSlot(new \DateTime("2018-07-19 09:00"), new \DateTime("2018-07-19 10:00"))
+                ->setSlot(new \DateTime("2018-07-20 09:00"), new \DateTime("2018-07-20 10:00"))
+                ->setSlot(new \DateTime("2018-07-18 10:00"), new \DateTime("2018-07-18 12:00"));
+
+
+            $interviewer1->schedule
+                ->setSlot(new \DateTime("2018-07-16 09:00"), new \DateTime("2018-07-16 16:00"))
+                ->setSlot(new \DateTime("2018-07-17 09:00"), new \DateTime("2018-07-17 16:00"))
+                ->setSlot(new \DateTime("2018-07-18 09:00"), new \DateTime("2018-07-18 16:00"))
+                ->setSlot(new \DateTime("2018-07-19 09:00"), new \DateTime("2018-07-19 16:00"))
+                ->setSlot(new \DateTime("2018-07-20 09:00"), new \DateTime("2018-07-20 16:00"))
+                ->setSlot(new \DateTime("2018-07-21 09:00"), new \DateTime("2018-07-21 16:00"))
+                ->setSlot(new \DateTime("2018-07-22 09:00"), new \DateTime("2018-07-22 16:00"));
+
+
             $interviewer2->schedule
-                ->setSlot([Schedule::MONDAY, Schedule::WEDNESDAY], [12, 18])
-                ->setSlot([Schedule::TUESDAY, Schedule::THURSDAY], [9, 12]);
+                ->setSlot(new \DateTime("2018-07-16 12:00"), new \DateTime("2018-07-16 18:00"))
+                ->setSlot(new \DateTime("2018-07-18 12:00"), new \DateTime("2018-07-18 18:00"))
+                ->setSlot(new \DateTime("2018-07-17 09:00"), new \DateTime("2018-07-17 12:00"))
+                ->setSlot(new \DateTime("2018-07-19 09:00"), new \DateTime("2018-07-19 12:00"));
 
         }catch (\Exception $e){
             return $this->validationError(['code' => $e->getCode(), 'message' => $e->getMessage()]);
         }
+
         $appointment = new Appointment();
         $appointment->setCandidate($candidate);
         $appointment->setInterviewers($interviewer1);
         $appointment->setInterviewers($interviewer2);
 
-        try {
-            $result = $appointment->query();
-        }catch (\Exception $e){
-            return $this->validationError(['code' => $e->getCode(), 'message' => $e->getMessage()]);
+        $result = $appointment->query();
+        if(is_object($result)){
+            return $result;
         }
 
         return  $this->json($result);
+    }
+
+    public function query(){
+
     }
 }
