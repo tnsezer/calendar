@@ -22,4 +22,8 @@ php bin/console server:run
 ### Project url
 http://127.0.0.1:8000/interview
 
-There are 2 users type Candidate and Interviewer.
+### Documentation
+There are 2 users type Candidate and Interviewer insteadof User class.
+Every user classes accept Schedule for available periods, 
+Appointment class for queries collection of periods.
+

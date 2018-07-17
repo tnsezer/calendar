@@ -25,17 +25,13 @@ class interviewController extends AbstractController
      */
     public function index(){
             $candidate = new Candidate("Carl");
-            $candidate->setSchedule(new Schedule());
-
             $interviewer1 = new Interviewer("Philipp");
-            $interviewer1->setSchedule(new Schedule());
-
             $interviewer2 = new Interviewer("Sarah");
-            $interviewer2->setSchedule(new Schedule());
 
 
         try {
-            $candidate->schedule
+            $schedule = new Schedule();
+            $schedule
                 ->setSlot(new \DateTime("2018-07-16 09:00"), new \DateTime("2018-07-16 10:00"))
                 ->setSlot(new \DateTime("2018-07-17 09:00"), new \DateTime("2018-07-17 10:00"))
                 ->setSlot(new \DateTime("2018-07-18 09:00"), new \DateTime("2018-07-18 10:00"))
@@ -43,8 +39,10 @@ class interviewController extends AbstractController
                 ->setSlot(new \DateTime("2018-07-20 09:00"), new \DateTime("2018-07-20 10:00"))
                 ->setSlot(new \DateTime("2018-07-18 10:00"), new \DateTime("2018-07-18 12:00"));
 
+            $candidate->setSchedule($schedule);
 
-            $interviewer1->schedule
+            $schedule = new Schedule();
+            $schedule
                 ->setSlot(new \DateTime("2018-07-16 09:00"), new \DateTime("2018-07-16 16:00"))
                 ->setSlot(new \DateTime("2018-07-17 09:00"), new \DateTime("2018-07-17 16:00"))
                 ->setSlot(new \DateTime("2018-07-18 09:00"), new \DateTime("2018-07-18 16:00"))
@@ -53,13 +51,16 @@ class interviewController extends AbstractController
                 ->setSlot(new \DateTime("2018-07-21 09:00"), new \DateTime("2018-07-21 16:00"))
                 ->setSlot(new \DateTime("2018-07-22 09:00"), new \DateTime("2018-07-22 16:00"));
 
+            $interviewer1->setSchedule($schedule);
 
-            $interviewer2->schedule
+            $schedule = new Schedule();
+            $schedule
                 ->setSlot(new \DateTime("2018-07-16 12:00"), new \DateTime("2018-07-16 18:00"))
                 ->setSlot(new \DateTime("2018-07-18 12:00"), new \DateTime("2018-07-18 18:00"))
                 ->setSlot(new \DateTime("2018-07-17 09:00"), new \DateTime("2018-07-17 12:00"))
                 ->setSlot(new \DateTime("2018-07-19 09:00"), new \DateTime("2018-07-19 12:00"));
 
+            $interviewer2->setSchedule($schedule);
         }catch (\Exception $e){
             return $this->validationError(['code' => $e->getCode(), 'message' => $e->getMessage()]);
         }
@@ -75,9 +76,5 @@ class interviewController extends AbstractController
         }
 
         return  $this->json($result);
-    }
-
-    public function query(){
-
     }
 }
