@@ -7,17 +7,17 @@
  */
 namespace App\Controller;
 
-use App\DependencyInjection\Schedule;
-use App\Util\Appointment;
-use App\Repository\Candidate;
-use App\Repository\Interviewer;
+use App\Repository\Appointment;
+use App\Model\Candidate;
+use App\Model\Interviewer;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\Routing\Annotation\Route;
 use App\Exception\ErrorHandler;
+use Symfony\Component\Routing\Annotation\Route;
 
 class interviewController extends AbstractController
 {
     use ErrorHandler;
+
     /**
      * Matches /interview exactly
      *
@@ -30,47 +30,38 @@ class interviewController extends AbstractController
 
 
         try {
-            $schedule = new Schedule();
-            $schedule
-                ->setSlot(new \DateTime("2018-07-16 09:00"), new \DateTime("2018-07-16 10:00"))
-                ->setSlot(new \DateTime("2018-07-17 09:00"), new \DateTime("2018-07-17 10:00"))
-                ->setSlot(new \DateTime("2018-07-18 09:00"), new \DateTime("2018-07-18 10:00"))
-                ->setSlot(new \DateTime("2018-07-19 09:00"), new \DateTime("2018-07-19 10:00"))
-                ->setSlot(new \DateTime("2018-07-20 09:00"), new \DateTime("2018-07-20 10:00"))
-                ->setSlot(new \DateTime("2018-07-18 10:00"), new \DateTime("2018-07-18 12:00"));
+            $candidate->addAvailability(new \DateTime("2018-07-17 09:00"), new \DateTime("2018-07-17 10:00"));
+            $candidate->addAvailability(new \DateTime("2018-07-18 09:00"), new \DateTime("2018-07-18 10:00"));
+            $candidate->addAvailability(new \DateTime("2018-07-19 09:00"), new \DateTime("2018-07-19 10:00"));
+            $candidate->addAvailability(new \DateTime("2018-07-20 09:00"), new \DateTime("2018-07-20 10:00"));
+            $candidate->addAvailability(new \DateTime("2018-07-18 10:00"), new \DateTime("2018-07-18 12:00"));
 
-            $candidate->setSchedule($schedule);
+            $interviewer1->addAvailability(new \DateTime("2018-07-16 09:00"), new \DateTime("2018-07-16 16:00"));
+            $interviewer1->addAvailability(new \DateTime("2018-07-17 09:00"), new \DateTime("2018-07-17 16:00"));
+            $interviewer1->addAvailability(new \DateTime("2018-07-18 09:00"), new \DateTime("2018-07-18 16:00"));
+            $interviewer1->addAvailability(new \DateTime("2018-07-19 09:00"), new \DateTime("2018-07-19 16:00"));
+            $interviewer1->addAvailability(new \DateTime("2018-07-20 09:00"), new \DateTime("2018-07-20 16:00"));
+            $interviewer1->addAvailability(new \DateTime("2018-07-21 09:00"), new \DateTime("2018-07-21 16:00"));
+            $interviewer1->addAvailability(new \DateTime("2018-07-22 09:00"), new \DateTime("2018-07-22 16:00"));
 
-            $schedule = new Schedule();
-            $schedule
-                ->setSlot(new \DateTime("2018-07-16 09:00"), new \DateTime("2018-07-16 16:00"))
-                ->setSlot(new \DateTime("2018-07-17 09:00"), new \DateTime("2018-07-17 16:00"))
-                ->setSlot(new \DateTime("2018-07-18 09:00"), new \DateTime("2018-07-18 16:00"))
-                ->setSlot(new \DateTime("2018-07-19 09:00"), new \DateTime("2018-07-19 16:00"))
-                ->setSlot(new \DateTime("2018-07-20 09:00"), new \DateTime("2018-07-20 16:00"))
-                ->setSlot(new \DateTime("2018-07-21 09:00"), new \DateTime("2018-07-21 16:00"))
-                ->setSlot(new \DateTime("2018-07-22 09:00"), new \DateTime("2018-07-22 16:00"));
-
-            $interviewer1->setSchedule($schedule);
-
-            $schedule = new Schedule();
-            $schedule
-                ->setSlot(new \DateTime("2018-07-16 12:00"), new \DateTime("2018-07-16 18:00"))
-                ->setSlot(new \DateTime("2018-07-18 12:00"), new \DateTime("2018-07-18 18:00"))
-                ->setSlot(new \DateTime("2018-07-17 09:00"), new \DateTime("2018-07-17 12:00"))
-                ->setSlot(new \DateTime("2018-07-19 09:00"), new \DateTime("2018-07-19 12:00"));
-
-            $interviewer2->setSchedule($schedule);
-        }catch (\Exception $e){
+            $interviewer2->addAvailability(new \DateTime("2018-07-16 12:00"), new \DateTime("2018-07-16 18:00"));
+            $interviewer2->addAvailability(new \DateTime("2018-07-18 12:00"), new \DateTime("2018-07-18 18:00"));
+            $interviewer2->addAvailability(new \DateTime("2018-07-17 09:00"), new \DateTime("2018-07-17 12:00"));
+            $interviewer2->addAvailability(new \DateTime("2018-07-19 09:00"), new \DateTime("2018-07-19 12:00"));
+        }catch (\InvalidArgumentException $e){
             return $this->validationError(['code' => $e->getCode(), 'message' => $e->getMessage()]);
         }
 
-        $appointment = new Appointment();
-        $appointment->setCandidate($candidate);
-        $appointment->setInterviewers($interviewer1);
-        $appointment->setInterviewers($interviewer2);
+        $appointment = new Appointment($candidate);
+        $appointment->addInterviewer($interviewer1);
+        $appointment->addInterviewer($interviewer2);
 
-        $result = $appointment->query();
+        try {
+            $result = $appointment->query();
+        }catch (\InvalidArgumentException $e){
+            return $this->validationError(['code' => $e->getCode(), 'message' => $e->getMessage()]);
+        }
+
         if(is_object($result)){
             return $result;
         }
